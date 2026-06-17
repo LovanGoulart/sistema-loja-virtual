@@ -26,6 +26,25 @@ async function loadStoreData() {
     }
 }
 
+
+// ============================================
+// FORMATACAO BRASILEIRA
+// ============================================
+
+function formatCurrency(value) {
+    return 'R$ ' + parseFloat(value).toFixed(2).replace('.', ',');
+}
+
+function formatPhone(value) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 11) {
+        return `(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}`;
+    } else if (digits.length === 10) {
+        return `(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}`;
+    }
+    return value;
+}
+
 function renderStore() {
     const data = window.storeData || {};
 
@@ -69,13 +88,13 @@ function renderStore() {
     const headerContact = document.getElementById('headerContact');
     let headerHtml = '';
     if (data.contact?.whatsapp) {
-        headerHtml += `<a href="https://wa.me/55${data.contact.whatsapp.replace(/\D/g, '')}" target="_blank"><i class="fab fa-whatsapp"></i> ${data.contact.whatsapp}</a>`;
+        headerHtml += `<a href="https://wa.me/55${data.contact.whatsapp.replace(/\D/g, '')}" target="_blank"><i class="fab fa-whatsapp"></i> ${formatPhone(data.contact.whatsapp)}</a>`;
     }
     if (data.contact?.email) {
         headerHtml += `<a href="mailto:${data.contact.email}"><i class="fas fa-envelope"></i> ${data.contact.email}</a>`;
     }
     if (data.contact?.phone) {
-        headerHtml += `<a href="tel:${data.contact.phone.replace(/\D/g, '')}"><i class="fas fa-phone"></i> ${data.contact.phone}</a>`;
+        headerHtml += `<a href="tel:${data.contact.phone.replace(/\D/g, '')}"><i class="fas fa-phone"></i> ${formatPhone(data.contact.phone)}</a>`;
     }
     headerContact.innerHTML = headerHtml;
 
@@ -112,8 +131,8 @@ function renderStore() {
                         ${product.description ? `<p class="product-description">${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</p>` : ''}
                         <div class="product-footer">
                             <div class="product-price">
-                                ${hasPromo ? `<span class="price-original">R$ ${product.price.toFixed(2)}</span>` : ''}
-                                <span class="price-current">R$ ${displayPrice.toFixed(2)}</span>
+                                ${hasPromo ? `<span class="price-original">${formatCurrency(product.price)}</span>` : ''}
+                                <span class="price-current">${formatCurrency(displayPrice)}</span>
                             </div>
                             <span class="view-more-btn">
                                 <i class="fas fa-eye"></i> Ver Mais
@@ -130,7 +149,7 @@ function renderStore() {
     let footerContactHtml = '';
     if (data.contact?.address) footerContactHtml += `<p><i class="fas fa-map-marker-alt"></i> ${data.contact.address}</p>`;
     if (data.contact?.businessHours) footerContactHtml += `<p><i class="fas fa-clock"></i> ${data.contact.businessHours}</p>`;
-    if (data.contact?.phone) footerContactHtml += `<p><i class="fas fa-phone"></i> ${data.contact.phone}</p>`;
+    if (data.contact?.phone) footerContactHtml += `<p><i class="fas fa-phone"></i> ${formatPhone(data.contact.phone)}</p>`;
     if (data.contact?.email) footerContactHtml += `<p><i class="fas fa-envelope"></i> ${data.contact.email}</p>`;
     footerContact.innerHTML = footerContactHtml;
 
@@ -243,9 +262,9 @@ function openProductModal(productId) {
 
     let priceHtml = '';
     if (hasPromo) {
-        priceHtml += `<span class="original">R$ ${product.price.toFixed(2)}</span>`;
+        priceHtml += `<span class="original">${formatCurrency(product.price)}</span>`;
     }
-    priceHtml += `R$ ${displayPrice.toFixed(2)}`;
+    priceHtml += `${formatCurrency(displayPrice)}`;
     document.getElementById('modalPrice').innerHTML = priceHtml;
 
     document.getElementById('modalDesc').textContent = product.description || 'Sem descrição disponível.';

@@ -38,6 +38,46 @@ let storeData = {
     }
 };
 
+
+// ============================================
+// FORMATACAO BRASILEIRA
+// ============================================
+
+function formatCurrency(input) {
+    let value = input.value.replace(/\D/g, '');
+    value = (parseInt(value) / 100).toFixed(2);
+    input.value = value;
+}
+
+function formatCurrencyDisplay(value) {
+    return 'R$ ' + parseFloat(value).toFixed(2).replace('.', ',');
+}
+
+function formatPhone(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.substring(0, 11);
+
+    if (value.length > 7) {
+        value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7)}`;
+    } else if (value.length > 2) {
+        value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+    } else if (value.length > 0) {
+        value = `(${value}`;
+    }
+
+    input.value = value;
+}
+
+function formatPhoneDisplay(value) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 11) {
+        return `(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}`;
+    } else if (digits.length === 10) {
+        return `(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}`;
+    }
+    return value;
+}
+
 let editingProductId = null;
 let productImages = {};
 
@@ -308,8 +348,8 @@ function renderProducts() {
                     ${product.active ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-warning">Inativo</span>'}
                 </div>
                 <div class="product-price">
-                    ${product.promo ? `<span style="text-decoration: line-through; color: #9ca3af; font-size: 0.875rem; margin-right: 0.5rem;">R$ ${product.price.toFixed(2)}</span>` : ''}
-                    R$ ${(product.promo || product.price).toFixed(2)}
+                    ${product.promo ? `<span style="text-decoration: line-through; color: #9ca3af; font-size: 0.875rem; margin-right: 0.5rem;">R$ ${product.price.toFixed(2).replace('.', ',')}</span>` : ''}
+                    R$ ${(product.promo || product.price).toFixed(2).replace('.', ',')}
                 </div>
                 <p style="color: var(--gray); font-size: 0.875rem; margin-bottom: 1rem;">${product.stock} em estoque</p>
                 <div class="product-actions">
@@ -770,12 +810,12 @@ async function loadData() {
                 document.getElementById('secondaryColorValue').textContent = storeData.appearance.secondaryColor;
             }
 
-            if (storeData.contact.whatsapp) document.getElementById('whatsapp').value = storeData.contact.whatsapp;
+            if (storeData.contact.whatsapp) document.getElementById('whatsapp').value = formatPhoneDisplay(storeData.contact.whatsapp);
             if (storeData.contact.whatsappMessage) document.getElementById('whatsappMessage').value = storeData.contact.whatsappMessage;
             if (storeData.contact.instagram) document.getElementById('instagram').value = storeData.contact.instagram;
             if (storeData.contact.facebook) document.getElementById('facebook').value = storeData.contact.facebook;
             if (storeData.contact.email) document.getElementById('email').value = storeData.contact.email;
-            if (storeData.contact.phone) document.getElementById('phone').value = storeData.contact.phone;
+            if (storeData.contact.phone) document.getElementById('phone').value = formatPhoneDisplay(storeData.contact.phone);
             if (storeData.contact.address) document.getElementById('address').value = storeData.contact.address;
             if (storeData.contact.businessHours) document.getElementById('businessHours').value = storeData.contact.businessHours;
 

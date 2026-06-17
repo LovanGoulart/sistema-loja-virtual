@@ -1,0 +1,60 @@
+{
+  "products": [
+    {
+      "id": 1781718339640,
+      "name": "Notebook Itautec",
+      "price": 890,
+      "promo": 850,
+      "stock": 1,
+      "description": "-Core I3\n-4GB Ram\n-SSD 240GB (armazenamento)",
+      "images": [
+        "/static/uploads/product_1781718339640_80e3731c.jpeg",
+        "/static/uploads/product_1781718339640_10be5dba.jpeg",
+        "/static/uploads/product_1781718339640_abdcf216.jpeg"
+      ],
+      "active": true,
+      "createdAt": "2026-06-17T17:45:39.640Z"
+    }
+  ],
+  "appearance": {
+    "banner": "/static/uploads/banner_d7d34dd1.jpeg",
+    "logo": "/static/uploads/logo_7a0c5b6b.png",
+    "primaryColor": "#0d0d0d",
+    "secondaryColor": "#d11f78",
+    "theme": "modern"
+  },
+  "payment": {
+    "boleto": {
+      "active": false,
+      "instructions": ""
+    },
+    "card": {
+      "active": true,
+      "link": ""
+    },
+    "pix": {
+      "city": "Santa Cruz do Sul",
+      "key": "51994713745",
+      "name": "Lovan anderson Goulart",
+      "qrCode": "/static/uploads/pix_1f05b5f4.jpeg"
+    }
+  },
+  "contact": {
+    "address": "Rua Cristóvão Colombo, 366\n",
+    "businessHours": "Seg a Sex - 9:00 - 15:00",
+    "email": "lovan@maua.g12.br",
+    "facebook": "https://www.facebook.com/lovan.goulart",
+    "instagram": "lovangoulart",
+    "phone": "",
+    "whatsapp": "(51) 99471-3745",
+    "whatsappMessage": "Ola! Vi seu site e tenho interesse em:"
+  },
+  "settings": {
+    "analyticsId": "",
+    "description": "",
+    "favicon": null,
+    "isOpen": true,
+    "slug": "",
+    "storeName": "Informática LG"
+  }
+}
