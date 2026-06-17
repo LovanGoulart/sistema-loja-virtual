@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Online</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loja.css') }}">
+<style>
+    .product-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(4px);
+    }
+    .product-modal-overlay.active { display: flex; }
+    .product-modal {
+        background: white;
+        border-radius: 1rem;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    .product-modal-close {
+        position: absolute;
+        top: 1rem; right: 1rem;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .product-modal-close:hover { background: rgba(0,0,0,0.8); }
+    .product-modal-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+    .product-modal-gallery {
+        padding: 2rem;
+        background: #f8fafc;
+    }
+    .product-modal-gallery img {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .product-modal-thumbs {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+    }
+    .product-modal-thumbs img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    .product-modal-thumbs img:hover,
+    .product-modal-thumbs img.active {
+        border-color: var(--primary);
+    }
+    .product-modal-info {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+    .product-modal-info h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    .product-modal-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+    }
+    .product-modal-price .original {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 1.25rem;
+        margin-right: 0.75rem;
+    }
+    .product-modal-desc {
+        color: var(--gray);
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+        flex: 1;
+    }
+    .product-modal-stock {
+        color: var(--success);
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .product-modal-buy {
+        background: #25d366;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    .product-modal-buy:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+    }
+    .product-card { cursor: pointer; }
+    @media (max-width: 768px) {
+        .product-modal-content { grid-template-columns: 1fr; }
+        .product-modal-gallery img { height: 250px; }
+    }
+</style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-content">
+            <div class="logo" id="logoContainer">
+                <h1 id="storeName">Minha Loja</h1>
+            </div>
+            <div class="header-contact" id="headerContact">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Banner -->
+    <div class="banner-section" id="bannerSection">
+        <div class="banner-placeholder" id="bannerPlaceholder">
+            <h2>Bem-vindo à nossa loja!</h2>
+            <p>Confira nossos produtos incríveis</p>
+        </div>
+        <img id="bannerImage" style="display: none;" alt="Banner">
+    </div>
+
+    <!-- Produtos -->
+    <main class="main-content">
+        <div class="container">
+            <h2 class="section-title">Nossos Produtos</h2>
+            <div class="products-grid" id="productsGrid">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-box-open"></i>
+                <h3>Em breve novos produtos!</h3>
+                <p>Nosso catálogo está sendo atualizado. Volte em breve!</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 id="footerStoreName">Minha Loja</h3>
+                <p id="footerDescription">Sua loja online de confiança</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contato</h4>
+                <div id="footerContact">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Redes Sociais</h4>
+                <div class="social-links" id="socialLinks">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </div>
+        <!-- Link Admin -->
+    <div style="text-align: center; padding: 1rem; background: #111827;">
+        <a href="/login" style="color: #6b7280; text-decoration: none; font-size: 0.75rem; transition: color 0.3s;">
+            <i class="fas fa-cog"></i> Área Administrativa
+        </a>
+    </div>
+    <div class="footer-bottom">
+            <p>© <span id="currentYear"></span> <span id="footerBrand">Minha Loja</span>. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="#" class="whatsapp-float" id="whatsappFloat" target="_blank" style="display: none;">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="{{ url_for('static', filename='js/loja.js') }}"></script>
+
+    <!-- Product Detail Modal -->
+    <div class="product-modal-overlay" id="productModal" onclick="closeProductModal(event)">
+        <div class="product-modal">
+            <button class="product-modal-close" onclick="closeProductModal()">&times;</button>
+            <div class="product-modal-content">
+                <div class="product-modal-gallery">
+                    <img id="modalMainImage" src="" alt="">
+                    <div class="product-modal-thumbs" id="modalThumbs"></div>
+                </div>
+                <div class="product-modal-info">
+                    <h2 id="modalTitle"></h2>
+                    <div class="product-modal-price" id="modalPrice"></div>
+                    <div class="product-modal-desc" id="modalDesc"></div>
+                    <div class="product-modal-stock" id="modalStock"></div>
+                    <a href="#" class="product-modal-buy" id="modalBuyBtn" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Comprar pelo WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

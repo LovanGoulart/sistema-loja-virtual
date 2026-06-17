@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Loja Online</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-cog"></i> AdminPro</h1>
+                <p>Painel de Controle</p>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <button class="nav-link active" onclick="showSection('dashboard')">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showSection('products')">
+                            <i class="fas fa-box"></i>
+                            <span>Produtos</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showSection('appearance')">
+                            <i class="fas fa-palette"></i>
+                            <span>Aparência</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showSection('payment')">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Pagamento</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showSection('contact')">
+                            <i class="fas fa-address-book"></i>
+                            <span>Contato</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showSection('settings')">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Configurações</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid #374151; margin-top: 2rem;">
+                <a href="/logout" class="nav-link" style="color: #ef4444; text-decoration: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Visão geral da sua loja</p>
+                </div>
+                <div class="user-menu">
+                    <button class="btn-preview" onclick="window.open('/', '_blank')">
+                        <i class="fas fa-eye"></i>
+                        Ver Site
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statProducts">0</div>
+                                <div class="stat-label">Produtos Ativos</div>
+                            </div>
+                            <div class="stat-icon blue">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statViews">1.2k</div>
+                                <div class="stat-label">Visualizações</div>
+                            </div>
+                            <div class="stat-icon green">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statSales">R$ 0</div>
+                                <div class="stat-label">Vendas Hoje</div>
+                            </div>
+                            <div class="stat-icon pink">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statStatus">Online</div>
+                                <div class="stat-label">Status da Loja</div>
+                            </div>
+                            <div class="stat-icon orange">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-rocket"></i>
+                            Ações Rápidas
+                        </h3>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="showSection('products'); openProductModal()">
+                            <i class="fas fa-plus-circle"></i>
+                            <div>
+                                <h4>Adicionar Produto</h4>
+                                <p>Cadastre um novo item à venda</p>
+                            </div>
+                        </button>
+                        <button class="quick-action-btn" onclick="showSection('appearance')">
+                            <i class="fas fa-paint-brush"></i>
+                            <div>
+                                <h4>Personalizar Tema</h4>
+                                <p>Altere cores e imagens do site</p>
+                            </div>
+                        </button>
+                        <button class="quick-action-btn" onclick="showSection('payment')">
+                            <i class="fas fa-qrcode"></i>
+                            <div>
+                                <h4>Configurar PIX</h4>
+                                <p>Adicione sua chave PIX</p>
+                            </div>
+                        </button>
+                        <button class="quick-action-btn" onclick="showSection('contact')">
+                            <i class="fab fa-whatsapp"></i>
+                            <div>
+                                <h4>Link WhatsApp</h4>
+                                <p>Configure seu botão de contato</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Dicas para Vender Mais
+                        </h3>
+                    </div>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <i class="fas fa-camera"></i>
+                            <div>
+                                <h4>Use imagens de qualidade</h4>
+                                <p>Produtos com fotos profissionais convertem até 40% mais vendas.</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-tags"></i>
+                            <div>
+                                <h4>Preços claros e transparentes</h4>
+                                <p>Mostre o preço final com frete para evitar abandono de carrinho.</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fab fa-whatsapp"></i>
+                            <div>
+                                <h4>Responda rápido no WhatsApp</h4>
+                                <p>Configure respostas automáticas para não perder nenhuma venda.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section id="products" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-box"></i>
+                            Meus Produtos
+                        </h3>
+                        <button class="btn btn-primary" onclick="openProductModal()">
+                            <i class="fas fa-plus"></i>
+                            Novo Produto
+                        </button>
+                    </div>
+                    <div id="productsList" class="product-grid"></div>
+                    <div id="emptyProducts" class="empty-state" style="display: none;">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Nenhum produto cadastrado</h3>
+                        <p>Clique em "Novo Produto" para começar a vender</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Appearance Section -->
+            <section id="appearance" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-palette"></i>
+                            Personalização Visual
+                        </h3>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Logo da Loja</label>
+                            <div class="image-upload" id="logoUpload" onclick="document.getElementById('logoInput').click()">
+                                <input type="file" id="logoInput" accept="image/*" onchange="handleImageUpload(this, 'logo')">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Clique para enviar logo</p>
+                                    <p class="upload-hint">Recomendado: 400x100px</p>
+                                </div>
+                                <img class="upload-preview" id="logoPreview" alt="Logo">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeImage('logo')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Banner Principal</label>
+                            <div class="image-upload" id="bannerUpload" onclick="document.getElementById('bannerInput').click()">
+                                <input type="file" id="bannerInput" accept="image/*" onchange="handleImageUpload(this, 'banner')">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Clique para enviar banner</p>
+                                    <p class="upload-hint">Recomendado: 1920x600px</p>
+                                </div>
+                                <img class="upload-preview" id="bannerPreview" alt="Banner">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeImage('banner')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cor Primária</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-input" id="primaryColor" value="#6366f1" onchange="updateColorPreview(this.value, 'primary')">
+                                <span class="color-value" id="primaryColorValue">#6366f1</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cor Secundária</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-input" id="secondaryColor" value="#ec4899" onchange="updateColorPreview(this.value, 'secondary')">
+                                <span class="color-value" id="secondaryColorValue">#ec4899</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Tema do Site</label>
+                            <div class="theme-grid">
+                                <div class="theme-option active" onclick="selectTheme(this, 'modern')">
+                                    <i class="fas fa-th-large"></i>
+                                    <h4>Moderno</h4>
+                                    <p>Design clean e atual</p>
+                                </div>
+                                <div class="theme-option" onclick="selectTheme(this, 'classic')">
+                                    <i class="fas fa-columns"></i>
+                                    <h4>Clássico</h4>
+                                    <p>Layout tradicional</p>
+                                </div>
+                                <div class="theme-option" onclick="selectTheme(this, 'minimal')">
+                                    <i class="fas fa-minus"></i>
+                                    <h4>Minimalista</h4>
+                                    <p>Simples e elegante</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveAppearance()">
+                            <i class="fas fa-save"></i>
+                            Salvar Aparência
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Section -->
+            <section id="payment" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-credit-card"></i>
+                            Configurações de Pagamento
+                        </h3>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('pix')">PIX</button>
+                        <button class="tab" onclick="switchTab('card')">Cartão</button>
+                        <button class="tab" onclick="switchTab('boleto')">Boleto</button>
+                    </div>
+
+                    <div id="tab-pix" class="tab-content active">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Chave PIX</label>
+                                <input type="text" class="form-input" id="pixKey" placeholder="CPF, CNPJ, Email ou Telefone">
+                                <p class="form-hint">Digite a chave PIX onde receberá os pagamentos</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nome do Beneficiário</label>
+                                <input type="text" class="form-input" id="pixName" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cidade</label>
+                                <input type="text" class="form-input" id="pixCity" placeholder="Cidade">
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">QR Code PIX (Opcional)</label>
+                                <div class="image-upload" id="pixUpload" onclick="document.getElementById('pixInput').click()">
+                                    <input type="file" id="pixInput" accept="image/*" onchange="handleImageUpload(this, 'pix')">
+                                    <div class="upload-placeholder">
+                                        <i class="fas fa-qrcode"></i>
+                                        <p>Clique para enviar QR Code</p>
+                                    </div>
+                                    <img class="upload-preview" id="pixPreview" alt="QR Code">
+                                    <div class="upload-actions">
+                                        <button class="btn-icon danger" onclick="event.stopPropagation(); removeImage('pix')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-card" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">Link de Pagamento (Mercado Pago, Stripe, etc.)</label>
+                                <input type="url" class="form-input" id="paymentLink" placeholder="https://mpago.la/...">
+                                <p class="form-hint">Cole aqui o link de checkout do seu gateway de pagamento</p>
+                            </div>
+                            <div class="form-group full-width">
+                                <div class="toggle-wrapper">
+                                    <div class="toggle active" id="cardToggle" onclick="toggleSwitch(this)">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                    <span>Ativar pagamento com cartão</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-boleto" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">Instruções para Boleto</label>
+                                <textarea class="form-textarea" id="boletoInstructions" placeholder="Informe como o cliente deve proceder para pagar via boleto..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <div class="toggle-wrapper">
+                                    <div class="toggle" id="boletoToggle" onclick="toggleSwitch(this)">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                    <span>Oferecer pagamento via boleto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="savePayment()">
+                            <i class="fas fa-save"></i>
+                            Salvar Configurações
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section id="contact" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-address-book"></i>
+                            Informações de Contato
+                        </h3>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp <span class="required">*</span></label>
+                            <input type="tel" class="form-input" id="whatsapp" placeholder="(11) 99999-9999">
+                            <p class="form-hint">Número com DDD para botão flutuante</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Mensagem Padrão WhatsApp</label>
+                            <input type="text" class="form-input" id="whatsappMessage" value="Olá! Vi seu site e tenho interesse em:">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Instagram</label>
+                            <div class="input-prefix">
+                                <span>@</span>
+                                <input type="text" class="form-input" id="instagram" placeholder="sualoja">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Facebook</label>
+                            <input type="text" class="form-input" id="facebook" placeholder="facebook.com/sualoja">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" class="form-input" id="email" placeholder="contato@sualoja.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Telefone Fixo</label>
+                            <input type="tel" class="form-input" id="phone" placeholder="(11) 3333-3333">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Endereço</label>
+                            <textarea class="form-textarea" id="address" placeholder="Rua, número, bairro, cidade - Estado"></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Horário de Atendimento</label>
+                            <input type="text" class="form-input" id="businessHours" placeholder="Seg a Sex: 9h às 18h | Sáb: 9h às 13h">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveContact()">
+                            <i class="fas fa-save"></i>
+                            Salvar Contato
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Configurações Gerais
+                        </h3>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nome da Loja <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="storeName" placeholder="Minha Loja">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Slug da URL</label>
+                            <input type="text" class="form-input" id="storeSlug" placeholder="minha-loja">
+                            <p class="form-hint">sua-url.com/<strong>minha-loja</strong></p>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Descrição da Loja (SEO)</label>
+                            <textarea class="form-textarea" id="storeDescription" placeholder="Descreva sua loja em poucas palavras..." maxlength="160"></textarea>
+                            <p class="form-hint">Máximo 160 caracteres. Aparece no Google.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Favicon</label>
+                            <div class="image-upload" id="faviconUpload" onclick="document.getElementById('faviconInput').click()" style="max-width: 150px;">
+                                <input type="file" id="faviconInput" accept="image/*" onchange="handleImageUpload(this, 'favicon')">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-star" style="font-size: 1.5rem;"></i>
+                                    <p class="upload-hint">Ícone do site</p>
+                                </div>
+                                <img class="upload-preview" id="faviconPreview" alt="Favicon">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeImage('favicon')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Google Analytics ID (Opcional)</label>
+                            <input type="text" class="form-input" id="analyticsId" placeholder="G-XXXXXXXXXX">
+                            <p class="form-hint">Cole aqui seu ID do Google Analytics para rastrear visitantes</p>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="toggle-wrapper">
+                                <div class="toggle active" id="storeToggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                                <span>Loja está aberta para vendas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i>
+                            Salvar Configurações
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-card danger-zone">
+                    <div class="section-header">
+                        <h3 class="section-title" style="color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Zona de Perigo
+                        </h3>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--gray);">Atenção: estas ações não podem ser desfeitas.</p>
+                    <button class="btn btn-danger" onclick="resetAllData()">
+                        <i class="fas fa-trash-alt"></i>
+                        Resetar Todos os Dados
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Novo Produto</h3>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">Imagens do Produto</label>
+                        <div class="product-images-grid">
+                            <div class="image-upload" id="productImage1" onclick="document.getElementById('productImg1').click()">
+                                <input type="file" id="productImg1" accept="image/*" onchange="handleProductImage(this, 1)">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <p class="upload-hint">Imagem 1</p>
+                                </div>
+                                <img class="upload-preview" id="productPreview1">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeProductImage(1)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="image-upload" id="productImage2" onclick="document.getElementById('productImg2').click()">
+                                <input type="file" id="productImg2" accept="image/*" onchange="handleProductImage(this, 2)">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <p class="upload-hint">Imagem 2</p>
+                                </div>
+                                <img class="upload-preview" id="productPreview2">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeProductImage(2)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="image-upload" id="productImage3" onclick="document.getElementById('productImg3').click()">
+                                <input type="file" id="productImg3" accept="image/*" onchange="handleProductImage(this, 3)">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <p class="upload-hint">Imagem 3</p>
+                                </div>
+                                <img class="upload-preview" id="productPreview3">
+                                <div class="upload-actions">
+                                    <button class="btn-icon danger" onclick="event.stopPropagation(); removeProductImage(3)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nome do Produto <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="productName" placeholder="Ex: Tênis Esportivo">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Preço <span class="required">*</span></label>
+                        <div class="input-prefix">
+                            <span>R$</span>
+                            <input type="number" class="form-input" id="productPrice" placeholder="0,00" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Preço Promocional (Opcional)</label>
+                        <div class="input-prefix">
+                            <span>R$</span>
+                            <input type="number" class="form-input" id="productPromo" placeholder="0,00" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Estoque</label>
+                        <input type="number" class="form-input" id="productStock" placeholder="Quantidade disponível" value="10">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-textarea" id="productDesc" placeholder="Descreva seu produto..."></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="toggle-wrapper">
+                            <div class="toggle active" id="productActive" onclick="toggleSwitch(this)">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span>Produto ativo e visível no site</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProductModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveProduct()">
+                    <i class="fas fa-save"></i>
+                    Salvar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal preview-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Pré-visualização do Site</h3>
+                <button class="modal-close" onclick="closePreview()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <iframe class="preview-frame" id="previewFrame"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
