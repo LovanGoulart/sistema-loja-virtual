@@ -35,7 +35,23 @@ let storeData = {
         favicon: null,
         analyticsId: '',
         isOpen: true
+    },
+    stats: {
+        views: 0,
+        viewsToday: 0,
+        totalSales: 0,
+        salesToday: 0
     }
+};
+
+let currentStats = {
+    views: 0,
+    viewsToday: 0,
+    totalSales: 0,
+    salesToday: 0,
+    activeProducts: 0,
+    reservedProducts: 0,
+    soldProducts: 0
 };
 
 
@@ -86,8 +102,9 @@ let productImages = {};
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
-    updateStats();
     setupEventListeners();
+    // Atualizar stats periodicamente
+    setInterval(updateStatsRealtime, 30000);
 });
 
 function setupEventListeners() {
@@ -108,6 +125,15 @@ function setupEventListeners() {
             if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('active');
             }
+        }
+    });
+
+    // Fechar dropdowns de status ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.status-selector')) {
+            document.querySelectorAll('.status-selector-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
         }
     });
 }
@@ -148,6 +174,7 @@ function showSection(sectionId) {
     }
 
     if (sectionId === 'products') renderProducts();
+    if (sectionId === 'dashboard') updateStats();
 }
 
 function toggleSidebar() {
@@ -229,6 +256,81 @@ function removeProductImage(num) {
 }
 
 // ============================================
+// STATUS DO PRODUTO
+// ============================================
+function getStatusLabel(status) {
+    const labels = {
+        'disponivel': 'Disponível',
+        'reservado': 'Reservado',
+        'vendido': 'Vendido'
+    };
+    return labels[status] || 'Disponível';
+}
+
+function getStatusBadgeClass(status) {
+    const classes = {
+        'disponivel': 'status-disponivel',
+        'reservado': 'status-reservado',
+        'vendido': 'status-vendido'
+    };
+    return classes[status] || 'status-disponivel';
+}
+
+function toggleStatusSelector(productId, event) {
+    event.stopPropagation();
+    // Fechar todos os outros menus
+    document.querySelectorAll('.status-selector-menu').forEach(menu => {
+        if (menu.id !== 'statusMenu_' + productId) {
+            menu.classList.remove('active');
+        }
+    });
+
+    const menu = document.getElementById('statusMenu_' + productId);
+    menu.classList.toggle('active');
+}
+
+async function changeProductStatus(productId, newStatus) {
+    try {
+        const response = await fetch(`/api/product/${productId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Atualizar local
+            const product = storeData.products.find(p => p.id === productId);
+            if (product) {
+                product.status = newStatus;
+            }
+
+            // Recarregar dados do servidor para ter stats atualizados
+            await loadData();
+
+            // Re-renderizar produtos
+            renderProducts();
+
+            // Atualizar dashboard
+            updateStats();
+
+            const statusLabels = {
+                'disponivel': 'Disponível',
+                'reservado': 'Reservado',
+                'vendido': 'Vendido'
+            };
+            showToast(`Produto marcado como ${statusLabels[newStatus]}!`);
+        } else {
+            showToast(result.message || 'Erro ao atualizar status', 'error');
+        }
+    } catch (e) {
+        console.error('Erro ao atualizar status:', e);
+        showToast('Erro ao atualizar status', 'error');
+    }
+}
+
+// ============================================
 // GERENCIAMENTO DE PRODUTOS
 // ============================================
 function openProductModal(productId = null) {
@@ -300,6 +402,7 @@ function saveProduct() {
         description: document.getElementById('productDesc').value,
         images: [productImages[1], productImages[2], productImages[3]].filter(Boolean),
         active: document.getElementById('productActive').classList.contains('active'),
+        status: editingProductId ? (storeData.products.find(p => p.id === editingProductId)?.status || 'disponivel') : 'disponivel',
         createdAt: editingProductId ? storeData.products.find(p => p.id === editingProductId).createdAt : new Date().toISOString()
     };
 
@@ -339,19 +442,54 @@ function renderProducts() {
     }
 
     emptyState.style.display = 'none';
-    container.innerHTML = storeData.products.map(product => `
-        <div class="product-card">
-            <img src="${product.images[0] || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" class="product-image" alt="${product.name}">
+    container.innerHTML = storeData.products.map(product => {
+        const status = product.status || 'disponivel';
+        const isSold = status === 'vendido';
+        const statusLabel = getStatusLabel(status);
+        const statusClass = getStatusBadgeClass(status);
+
+        return `
+        <div class="product-card" style="${isSold ? 'opacity: 0.85;' : ''}">
+            <div class="product-status-bar">
+                <div class="status-selector">
+                    <button class="status-badge ${statusClass}" onclick="toggleStatusSelector(${product.id}, event)">
+                        ${statusLabel}
+                        <i class="fas fa-chevron-down" style="font-size: 0.625rem; margin-left: 0.25rem;"></i>
+                    </button>
+                    <div class="status-selector-menu" id="statusMenu_${product.id}">
+                        <button class="status-option" onclick="changeProductStatus(${product.id}, 'disponivel')">
+                            <span class="status-option-dot disponivel"></span>
+                            Disponível
+                        </button>
+                        <button class="status-option" onclick="changeProductStatus(${product.id}, 'reservado')">
+                            <span class="status-option-dot reservado"></span>
+                            Reservado
+                        </button>
+                        <button class="status-option" onclick="changeProductStatus(${product.id}, 'vendido')">
+                            <span class="status-option-dot vendido"></span>
+                            Vendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <img src="${product.images[0] || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" class="product-image" alt="${product.name}" style="${isSold ? 'filter: grayscale(0.3);' : ''}">
+
+            ${isSold ? '<div class="product-sold-overlay"><span>VENDIDO</span></div>' : ''}
+
             <div class="product-info">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                    <h3 class="product-name">${product.name}</h3>
+                    <h3 class="product-name" style="${isSold ? 'text-decoration: line-through; opacity: 0.7;' : ''}">${product.name}</h3>
                     ${product.active ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-warning">Inativo</span>'}
                 </div>
-                <div class="product-price">
+                <div class="product-price" style="${isSold ? 'opacity: 0.6;' : ''}">
                     ${product.promo ? `<span style="text-decoration: line-through; color: #9ca3af; font-size: 0.875rem; margin-right: 0.5rem;">R$ ${product.price.toFixed(2).replace('.', ',')}</span>` : ''}
                     R$ ${(product.promo || product.price).toFixed(2).replace('.', ',')}
                 </div>
-                <p style="color: var(--gray); font-size: 0.875rem; margin-bottom: 1rem;">${product.stock} em estoque</p>
+                <p style="color: var(--gray); font-size: 0.875rem; margin-bottom: 1rem;">
+                    ${product.stock} em estoque
+                    ${product.soldAt ? `<br><small style="color: #9ca3af;">Vendido em: ${new Date(product.soldAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                </p>
                 <div class="product-actions">
                     <button class="btn btn-primary btn-sm" onclick="openProductModal(${product.id})">
                         <i class="fas fa-edit"></i> Editar
@@ -362,7 +500,7 @@ function renderProducts() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // ============================================
@@ -746,21 +884,74 @@ function generateStoreHtml() {
 }
 
 // ============================================
-// ESTATÍSTICAS
+// ESTATÍSTICAS - DASHBOARD
 // ============================================
-function updateStats() {
-    const activeProducts = storeData.products.filter(p => p.active).length;
+async function updateStats() {
+    try {
+        const response = await fetch('/api/stats');
+        if (response.ok) {
+            const stats = await response.json();
+            if (stats.success) {
+                currentStats = stats;
+
+                // Atualizar cards do dashboard
+                document.getElementById('statProducts').textContent = stats.activeProducts;
+                document.getElementById('statViews').textContent = formatNumber(stats.viewsToday);
+                document.getElementById('statSales').textContent = formatCurrencyDisplay(stats.salesToday);
+                document.getElementById('statStatus').textContent = stats.storeStatus ? 'Online' : 'Fechada';
+
+                // Atualizar cards extras se existirem
+                const statReserved = document.getElementById('statReserved');
+                const statSold = document.getElementById('statSold');
+                const statTotalSales = document.getElementById('statTotalSales');
+
+                if (statReserved) statReserved.textContent = stats.reservedProducts;
+                if (statSold) statSold.textContent = stats.soldProducts;
+                if (statTotalSales) statTotalSales.textContent = formatCurrencyDisplay(stats.totalSales);
+            }
+        }
+    } catch (e) {
+        console.warn('Erro ao carregar estatísticas:', e);
+        // Fallback para cálculo local
+        updateStatsLocal();
+    }
+}
+
+function updateStatsLocal() {
+    const activeProducts = storeData.products.filter(p => p.active !== false).length;
+    const reservedProducts = storeData.products.filter(p => p.status === 'reservado').length;
+    const soldProducts = storeData.products.filter(p => p.status === 'vendido').length;
+
     document.getElementById('statProducts').textContent = activeProducts;
 
-    const totalSales = storeData.products.reduce((acc, p) => acc + (p.price * (p.stock < 10 ? 10 - p.stock : 0)), 0);
-    document.getElementById('statSales').textContent = 'R$ ' + totalSales.toFixed(2);
+    const views = storeData.stats?.viewsToday || 0;
+    document.getElementById('statViews').textContent = formatNumber(views);
 
-    const status = storeData.settings.isOpen ? 'Online' : 'Fechada';
+    const salesToday = storeData.stats?.salesToday || 0;
+    document.getElementById('statSales').textContent = formatCurrencyDisplay(salesToday);
+
+    const status = storeData.settings?.isOpen ? 'Online' : 'Fechada';
     document.getElementById('statStatus').textContent = status;
+
+    const statReserved = document.getElementById('statReserved');
+    const statSold = document.getElementById('statSold');
+    if (statReserved) statReserved.textContent = reservedProducts;
+    if (statSold) statSold.textContent = soldProducts;
+}
+
+async function updateStatsRealtime() {
+    await updateStats();
+}
+
+function formatNumber(num) {
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'k';
+    }
+    return num.toString();
 }
 
 // ============================================
-// LOCAL STORAGE
+// LOCAL STORAGE / SERVER
 // ============================================
 async function saveData() {
     try {
@@ -772,6 +963,8 @@ async function saveData() {
         const result = await response.json();
         if (result.success) {
             showToast(result.message);
+            // Atualizar stats após salvar
+            updateStats();
             return true;
         } else {
             showToast(result.message, 'error');
@@ -853,6 +1046,9 @@ async function loadData() {
             const themeMap = { 'modern': 0, 'classic': 1, 'minimal': 2 };
             const themeIndex = themeMap[storeData.appearance.theme] || 0;
             document.querySelectorAll('.theme-option')[themeIndex]?.classList.add('active');
+
+            // Atualizar estatísticas
+            updateStats();
         }
     } catch (e) {
         console.warn('Erro ao carregar do servidor:', e);

@@ -94,6 +94,9 @@
                             <div>
                                 <div class="stat-value" id="statProducts">0</div>
                                 <div class="stat-label">Produtos Ativos</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> visíveis no site
+                                </div>
                             </div>
                             <div class="stat-icon blue">
                                 <i class="fas fa-box"></i>
@@ -103,22 +106,56 @@
                     <div class="stat-card">
                         <div class="stat-header">
                             <div>
-                                <div class="stat-value" id="statViews">1.2k</div>
-                                <div class="stat-label">Visualizações</div>
+                                <div class="stat-value" id="statViews">0</div>
+                                <div class="stat-label">Visualizações Hoje</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-eye"></i> acessos na loja
+                                </div>
                             </div>
                             <div class="stat-icon green">
-                                <i class="fas fa-eye"></i>
+                                <i class="fas fa-chart-line"></i>
                             </div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-header">
                             <div>
-                                <div class="stat-value" id="statSales">R$ 0</div>
+                                <div class="stat-value" id="statSales">R$ 0,00</div>
                                 <div class="stat-label">Vendas Hoje</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-shopping-cart"></i> faturamento
+                                </div>
                             </div>
                             <div class="stat-icon pink">
-                                <i class="fas fa-shopping-cart"></i>
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statReserved">0</div>
+                                <div class="stat-label">Reservados</div>
+                                <div class="stat-change warning">
+                                    <i class="fas fa-clock"></i> aguardando
+                                </div>
+                            </div>
+                            <div class="stat-icon purple">
+                                <i class="fas fa-bookmark"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statSold">0</div>
+                                <div class="stat-label">Vendidos</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-check"></i> total
+                                </div>
+                            </div>
+                            <div class="stat-icon teal">
+                                <i class="fas fa-check-circle"></i>
                             </div>
                         </div>
                     </div>
@@ -127,10 +164,37 @@
                             <div>
                                 <div class="stat-value" id="statStatus">Online</div>
                                 <div class="stat-label">Status da Loja</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-signal"></i> operando
+                                </div>
                             </div>
                             <div class="stat-icon orange">
-                                <i class="fas fa-check-circle"></i>
+                                <i class="fas fa-store"></i>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo de Vendas -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Resumo de Vendas
+                        </h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #f0fdf4, #d1fae5); border-radius: 1rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #059669; margin-bottom: 0.5rem;" id="statTotalSales">R$ 0,00</div>
+                            <div style="color: #065f46; font-size: 0.875rem; font-weight: 500;">Total em Vendas</div>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 1rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #2563eb; margin-bottom: 0.5rem;" id="statTotalViews">0</div>
+                            <div style="color: #1e40af; font-size: 0.875rem; font-weight: 500;">Total de Visualizações</div>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 1rem;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #d97706; margin-bottom: 0.5rem;" id="statConversion">0%</div>
+                            <div style="color: #92400e; font-size: 0.875rem; font-weight: 500;">Taxa de Conversão</div>
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await loadStoreData();
     renderStore();
+    recordView();
 });
 
 async function loadStoreData() {
@@ -26,6 +27,20 @@ async function loadStoreData() {
     }
 }
 
+// ============================================
+// REGISTRAR VISUALIZACAO
+// ============================================
+async function recordView() {
+    try {
+        // Usar sessionStorage para não contar múltiplas views do mesmo usuário na mesma sessão
+        if (!sessionStorage.getItem('viewRecorded')) {
+            await fetch('/api/stats/view', { method: 'POST' });
+            sessionStorage.setItem('viewRecorded', 'true');
+        }
+    } catch (e) {
+        console.warn('Erro ao registrar visualização:', e);
+    }
+}
 
 // ============================================
 // FORMATACAO BRASILEIRA
@@ -98,10 +113,10 @@ function renderStore() {
     }
     headerContact.innerHTML = headerHtml;
 
-    // Produtos
+    // Produtos - filtrar apenas disponíveis e ativos
     const productsGrid = document.getElementById('productsGrid');
     const emptyState = document.getElementById('emptyState');
-    const products = data.products?.filter(p => p.active) || [];
+    const products = data.products?.filter(p => p.active !== false && p.status !== 'vendido') || [];
 
     if (products.length === 0) {
         productsGrid.style.display = 'none';
@@ -121,8 +136,15 @@ function renderStore() {
                 whatsappLink = `https://wa.me/55${data.contact.whatsapp.replace(/\D/g, '')}?text=${message}`;
             }
 
+            // Badge de status
+            let statusBadge = '';
+            if (product.status === 'reservado') {
+                statusBadge = `<div style="position: absolute; top: 0.75rem; left: 0.75rem; background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; z-index: 10;">RESERVADO</div>`;
+            }
+
             return `
-                <div class="product-card" id="product-${product.id}" onclick="openProductModal(${product.id})">
+                <div class="product-card" id="product-${product.id}" onclick="openProductModal(${product.id})" style="position: relative;">
+                    ${statusBadge}
                     <img src="${product.images?.[0] || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" 
                          class="product-image" 
                          alt="${product.name}">
@@ -255,6 +277,11 @@ function openProductModal(productId) {
     const product = data.products?.find(p => p.id === productId);
     if (!product) return;
 
+    // Não abrir modal se produto estiver vendido
+    if (product.status === 'vendido') {
+        return;
+    }
+
     document.getElementById('modalTitle').textContent = product.name;
 
     const hasPromo = product.promo && product.promo < product.price;
@@ -269,6 +296,11 @@ function openProductModal(productId) {
 
     document.getElementById('modalDesc').textContent = product.description || 'Sem descrição disponível.';
     document.getElementById('modalStock').innerHTML = `<i class="fas fa-check-circle"></i> ${product.stock} unidades em estoque`;
+
+    // Mostrar status no modal
+    if (product.status === 'reservado') {
+        document.getElementById('modalStock').innerHTML = `<i class="fas fa-clock" style="color: #f59e0b;"></i> <span style="color: #f59e0b; font-weight: 600;">PRODUTO RESERVADO</span>`;
+    }
 
     // Imagens
     const mainImg = document.getElementById('modalMainImage');
@@ -287,12 +319,20 @@ function openProductModal(productId) {
 
     // Botao comprar
     const buyBtn = document.getElementById('modalBuyBtn');
-    if (data.contact?.whatsapp) {
+    if (data.contact?.whatsapp && product.status !== 'reservado') {
         const message = encodeURIComponent(
             (data.contact.whatsappMessage || 'Ola! Tenho interesse em:') + ' ' + product.name
         );
         buyBtn.href = `https://wa.me/55${data.contact.whatsapp.replace(/\D/g, '')}?text=${message}`;
         buyBtn.style.display = 'inline-flex';
+        buyBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Comprar pelo WhatsApp';
+    } else if (product.status === 'reservado') {
+        buyBtn.style.display = 'inline-flex';
+        buyBtn.href = '#';
+        buyBtn.style.background = '#9ca3af';
+        buyBtn.style.cursor = 'not-allowed';
+        buyBtn.innerHTML = '<i class="fas fa-clock"></i> Produto Reservado';
+        buyBtn.onclick = (e) => e.preventDefault();
     } else {
         buyBtn.style.display = 'none';
     }
@@ -305,6 +345,12 @@ function closeProductModal(event) {
     if (event && event.target !== event.currentTarget) return;
     document.getElementById('productModal').classList.remove('active');
     document.body.style.overflow = '';
+
+    // Resetar botão de compra
+    const buyBtn = document.getElementById('modalBuyBtn');
+    buyBtn.style.background = '';
+    buyBtn.style.cursor = '';
+    buyBtn.onclick = null;
 }
 
 function changeModalImage(src, thumb) {

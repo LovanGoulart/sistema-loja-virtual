@@ -74,6 +74,14 @@ def get_default_data():
             "favicon": None,
             "analyticsId": "",
             "isOpen": True
+        },
+        "stats": {
+            "views": 0,
+            "viewsToday": 0,
+            "lastViewReset": datetime.now().isoformat(),
+            "totalSales": 0.0,
+            "salesToday": 0.0,
+            "lastSalesReset": datetime.now().isoformat()
         }
     }
 
@@ -124,6 +132,35 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def reset_daily_stats():
+    """Reseta estatísticas diárias se necessário"""
+    data = load_data()
+    stats = data.get('stats', {})
+    now = datetime.now()
+
+    last_reset = stats.get('lastViewReset', now.isoformat())
+    last_sales_reset = stats.get('lastSalesReset', now.isoformat())
+
+    try:
+        last_reset_dt = datetime.fromisoformat(last_reset)
+        last_sales_dt = datetime.fromisoformat(last_sales_reset)
+    except:
+        last_reset_dt = now
+        last_sales_dt = now
+
+    # Reset views diárias
+    if last_reset_dt.date() != now.date():
+        stats['viewsToday'] = 0
+        stats['lastViewReset'] = now.isoformat()
+
+    # Reset vendas diárias
+    if last_sales_dt.date() != now.date():
+        stats['salesToday'] = 0.0
+        stats['lastSalesReset'] = now.isoformat()
+
+    data['stats'] = stats
+    save_data(data)
+
 # ============================================
 # ROTAS - LOJA PUBLICA (PRINCIPAL)
 # ============================================
@@ -160,6 +197,7 @@ def logout():
 @app.route('/api/data', methods=['GET'])
 @login_required
 def get_data():
+    reset_daily_stats()
     return jsonify(load_data())
 
 @app.route('/api/data', methods=['POST'])
@@ -195,6 +233,123 @@ def upload_file():
     return jsonify({"success": False, "message": "Tipo de arquivo nao permitido"}), 400
 
 # ============================================
+# API - ESTATÍSTICAS E VENDAS
+# ============================================
+
+@app.route('/api/stats/view', methods=['POST'])
+def record_view():
+    """Registra uma visualização da loja"""
+    data = load_data()
+    stats = data.get('stats', get_default_data()['stats'])
+
+    now = datetime.now()
+    last_reset = stats.get('lastViewReset', now.isoformat())
+    try:
+        last_reset_dt = datetime.fromisoformat(last_reset)
+    except:
+        last_reset_dt = now
+
+    if last_reset_dt.date() != now.date():
+        stats['viewsToday'] = 0
+        stats['lastViewReset'] = now.isoformat()
+
+    stats['views'] = stats.get('views', 0) + 1
+    stats['viewsToday'] = stats.get('viewsToday', 0) + 1
+
+    data['stats'] = stats
+    save_data(data)
+    return jsonify({"success": True, "views": stats['views'], "viewsToday": stats['viewsToday']})
+
+@app.route('/api/product/<int:product_id>/status', methods=['POST'])
+@login_required
+def update_product_status(product_id):
+    """Atualiza o status de um produto (disponivel, reservado, vendido)"""
+    data = load_data()
+    body = request.get_json() or {}
+    new_status = body.get('status')
+
+    if new_status not in ['disponivel', 'reservado', 'vendido']:
+        return jsonify({"success": False, "message": "Status invalido"}), 400
+
+    product = None
+    for p in data.get('products', []):
+        if p['id'] == product_id:
+            product = p
+            break
+
+    if not product:
+        return jsonify({"success": False, "message": "Produto nao encontrado"}), 404
+
+    old_status = product.get('status', 'disponivel')
+    product['status'] = new_status
+
+    # Se marcou como vendido, registrar venda
+    stats = data.get('stats', get_default_data()['stats'])
+    now = datetime.now()
+
+    if new_status == 'vendido' and old_status != 'vendido':
+        sale_price = product.get('promo') or product.get('price') or 0
+        stats['totalSales'] = stats.get('totalSales', 0) + float(sale_price)
+
+        last_sales_reset = stats.get('lastSalesReset', now.isoformat())
+        try:
+            last_sales_dt = datetime.fromisoformat(last_sales_reset)
+        except:
+            last_sales_dt = now
+
+        if last_sales_dt.date() != now.date():
+            stats['salesToday'] = 0.0
+            stats['lastSalesReset'] = now.isoformat()
+
+        stats['salesToday'] = stats.get('salesToday', 0) + float(sale_price)
+        product['soldAt'] = now.isoformat()
+        product['soldPrice'] = float(sale_price)
+
+    # Se desmarcou vendido, subtrair venda
+    elif old_status == 'vendido' and new_status != 'vendido':
+        sold_price = product.get('soldPrice', product.get('promo') or product.get('price') or 0)
+        stats['totalSales'] = max(0, stats.get('totalSales', 0) - float(sold_price))
+        stats['salesToday'] = max(0, stats.get('salesToday', 0) - float(sold_price))
+        product.pop('soldAt', None)
+        product.pop('soldPrice', None)
+
+    data['stats'] = stats
+    save_data(data)
+    return jsonify({"success": True, "message": f"Status atualizado para {new_status}"})
+
+@app.route('/api/stats', methods=['GET'])
+@login_required
+def get_stats():
+    """Retorna estatísticas atualizadas"""
+    reset_daily_stats()
+    data = load_data()
+    stats = data.get('stats', get_default_data()['stats'])
+
+    active_products = len([p for p in data.get('products', []) if p.get('active', True)])
+    reserved_products = len([p for p in data.get('products', []) if p.get('status') == 'reservado'])
+    sold_products = len([p for p in data.get('products', []) if p.get('status') == 'vendido'])
+
+    # Calcular taxa de conversão
+    views_today = stats.get('viewsToday', 0)
+    sales_today = stats.get('salesToday', 0)
+    conversion_rate = 0
+    if views_today > 0:
+        conversion_rate = round((sales_today / views_today) * 100, 1)
+
+    return jsonify({
+        "success": True,
+        "views": stats.get('views', 0),
+        "viewsToday": views_today,
+        "totalSales": stats.get('totalSales', 0.0),
+        "salesToday": sales_today,
+        "activeProducts": active_products,
+        "reservedProducts": reserved_products,
+        "soldProducts": sold_products,
+        "storeStatus": data.get('settings', {}).get('isOpen', True),
+        "conversionRate": conversion_rate
+    })
+
+# ============================================
 # API - LOJA PUBLICA
 # ============================================
 
@@ -209,6 +364,9 @@ def get_store_data():
             "storeName": data.get('settings', {}).get('storeName', 'Minha Loja'),
             "description": data.get('settings', {}).get('description', ''),
             "isOpen": data.get('settings', {}).get('isOpen', True)
+        },
+        "stats": {
+            "views": data.get('stats', {}).get('views', 0)
         }
     }
     return jsonify(public_data)

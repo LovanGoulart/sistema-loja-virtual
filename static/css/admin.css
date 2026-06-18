@@ -310,6 +310,8 @@ body {
 .stat-icon.green { background: #d1fae5; color: #059669; }
 .stat-icon.pink { background: #fce7f3; color: #db2777; }
 .stat-icon.orange { background: #ffedd5; color: #ea580c; }
+.stat-icon.purple { background: #ede9fe; color: #7c3aed; }
+.stat-icon.teal { background: #ccfbf1; color: #0d9488; }
 
 .stat-value {
     font-size: 1.875rem;
@@ -322,6 +324,15 @@ body {
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
+
+.stat-change {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.stat-change.positive { color: var(--success); }
+.stat-change.negative { color: var(--danger); }
 
 /* ============================================
    AÇÕES RÁPIDAS
@@ -652,6 +663,175 @@ body {
 
 .badge-success { background: #d1fae5; color: #065f46; }
 .badge-warning { background: #fef3c7; color: #92400e; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-info { background: #dbeafe; color: #1e40af; }
+.badge-purple { background: #ede9fe; color: #5b21b6; }
+
+/* ============================================
+   STATUS DO PRODUTO
+   ============================================ */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.status-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-disponivel {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+.status-disponivel::before { background: #10b981; }
+
+.status-reservado {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+.status-reservado::before { background: #f59e0b; }
+
+.status-vendido {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.status-vendido::before { background: #ef4444; }
+
+/* Status Selector Dropdown */
+.status-selector {
+    position: relative;
+    display: inline-block;
+}
+
+.status-selector-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    background: var(--light);
+    color: var(--dark);
+}
+
+.status-selector-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.status-selector-btn i {
+    font-size: 0.75rem;
+}
+
+.status-selector-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding: 0.5rem;
+    min-width: 160px;
+    z-index: 100;
+    display: none;
+    border: 1px solid #e5e7eb;
+}
+
+.status-selector-menu.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+}
+
+.status-option:hover {
+    background: var(--light);
+}
+
+.status-option-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-option-dot.disponivel { background: #10b981; }
+.status-option-dot.reservado { background: #f59e0b; }
+.status-option-dot.vendido { background: #ef4444; }
+
+/* Product card status indicator */
+.product-status-bar {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 10;
+}
+
+.product-status-bar .status-badge {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Product sold overlay */
+.product-sold-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    z-index: 5;
+}
+
+.product-sold-overlay span {
+    background: var(--danger);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transform: rotate(-15deg);
+    border: 3px solid white;
+}
 
 /* ============================================
    EMPTY STATE
